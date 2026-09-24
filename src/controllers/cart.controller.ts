@@ -19,12 +19,10 @@ export const addToCart = asyncHandler(
 
     const { productId, quantity = 1 } = req.body;
 
-    // 1. Check authenticated user
     if (!userId) {
       throw new ApiError(401, "Unauthorized request");
     }
 
-    // 2. Validate quantity
     if (
       !Number.isInteger(quantity) ||
       quantity < 1
@@ -35,7 +33,6 @@ export const addToCart = asyncHandler(
       );
     }
 
-    // 3. Find active product
     const product = await Product.findOne({
       _id: productId,
       isActive: true,
@@ -48,7 +45,6 @@ export const addToCart = asyncHandler(
       );
     }
 
-    // 4. Check stock
     if (product.stock < quantity) {
       throw new ApiError(
         400,
@@ -56,13 +52,11 @@ export const addToCart = asyncHandler(
       );
     }
 
-    // 5. Find user's cart
     let cart = await Cart.findOne({
       user: userId,
     });
 
     if (!cart) {
-      // 6. Create new cart
       cart = await Cart.create({
         user: userId,
         items: [
@@ -74,7 +68,6 @@ export const addToCart = asyncHandler(
         ],
       });
     } else {
-      // 7. Check whether product already exists
       const existingItem = cart.items.find(
         (item: { product: { toString(): string }; quantity: number; price: number }) =>
           item.product.toString() === product._id.toString()
@@ -84,7 +77,6 @@ export const addToCart = asyncHandler(
         const updatedQuantity =
           existingItem.quantity + quantity;
 
-        // 8. Check combined quantity against stock
         if (updatedQuantity > product.stock) {
           throw new ApiError(
             400,
@@ -94,10 +86,8 @@ export const addToCart = asyncHandler(
 
         existingItem.quantity = updatedQuantity;
 
-        // Update current price snapshot
         existingItem.price = product.price;
       } else {
-        // 9. Add new item
         cart.items.push({
           product: product._id,
           quantity,
@@ -108,7 +98,6 @@ export const addToCart = asyncHandler(
       await cart.save();
     }
 
-    // 10. Populate product details
     await cart.populate({
       path: "items.product",
       select: "name slug images price stock isActive",
@@ -124,7 +113,6 @@ export const addToCart = asyncHandler(
   }
 );
 
-// 2. GET CART
 export const getCart = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = (req as AuthenticatedRequest).user?.id;
@@ -186,7 +174,6 @@ export const getCart = asyncHandler(
   }
 );
 
-// 3. UPDATE CART ITEM
 export const updateCartItem = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = (req as AuthenticatedRequest).user?.id;
@@ -265,7 +252,7 @@ export const updateCartItem = asyncHandler(
   }
 );
 
-// 4. REMOVE FROM CART
+
 export const removeFromCart = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = (req as AuthenticatedRequest).user?.id;
@@ -309,3 +296,36 @@ export const removeFromCart = asyncHandler(
   }
 );
 
+export const clearCart = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = (req as AuthenticatedRequest).user?.id;
+
+    if (!userId) {
+      throw new ApiError(401, "Unauthorized request");
+    }
+
+    const cart = await Cart.findOne({
+      user: userId,
+    });
+
+    if (!cart) {
+      throw new ApiError(404, "Cart not found");
+    }
+
+    if (cart.items.length === 0) {
+      throw new ApiError(400, "Cart is already empty");
+    }
+
+    cart.items = [] as typeof cart.items;
+
+    await cart.save();
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        cart,
+        "Cart cleared successfully"
+      )
+    );
+  }
+);

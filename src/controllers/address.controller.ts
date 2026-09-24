@@ -1,4 +1,4 @@
-// import { Request, Response } from "express";
+import { Request, Response } from "express";
 import mongoose from "mongoose";
 
 import { Address } from "../models/address.model.js";
@@ -6,62 +6,59 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
+export const createAddress = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.user.id;
 
+    const {
+      fullName,
+      phone,
+      addressLine1,
+      addressLine2,
+      landmark,
+      city,
+      state,
+      postalCode,
+      country,
+      type,
+      isDefault,
+    } = req.body;
 
-  export const createAddress = asyncHandler(
-    async (req, res) => {
-      const userId = req.user.id;
-
-      const {
-        fullName,
-        phone,
-        addressLine1,
-        addressLine2,
-        landmark,
-        city,
-        state,
-        postalCode,
-        country,
-        type,
-        isDefault,
-      } = req.body;
-
-      // If new address is default, remove previous default
-      if (isDefault === true) {
-        await Address.updateMany(
-          { user: userId, isDefault: true },
-          { $set: { isDefault: false } }
-        );
-      }
-
-      const address = await Address.create({
-        user: userId,
-        fullName,
-        phone,
-        addressLine1,
-        addressLine2,
-        landmark,
-        city,
-        state,
-        postalCode,
-        country,
-        type,
-        isDefault,
-      });
-
-      return res.status(201).json(
-        new ApiResponse(
-          201,
-          address,
-          "Address created successfully"
-        )
+    // If new address is default, remove previous default
+    if (isDefault === true) {
+      await Address.updateMany(
+        { user: userId, isDefault: true },
+        { $set: { isDefault: false } }
       );
     }
-  );
 
+    const address = await Address.create({
+      user: userId,
+      fullName,
+      phone,
+      addressLine1,
+      addressLine2,
+      landmark,
+      city,
+      state,
+      postalCode,
+      country,
+      type,
+      isDefault,
+    });
+
+    return res.status(201).json(
+      new ApiResponse(
+        201,
+        address,
+        "Address created successfully"
+      )
+    );
+  }
+);
 
 export const getAddresses = asyncHandler(
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     const userId = req.user.id;
 
     const addresses = await Address.find({
@@ -81,9 +78,8 @@ export const getAddresses = asyncHandler(
   }
 );
 
-
 export const getAddressById = asyncHandler(
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     const userId = req.user.id;
     const { addressId } = req.params;
 
@@ -110,9 +106,8 @@ export const getAddressById = asyncHandler(
   }
 );
 
-
 export const updateAddress = asyncHandler(
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     const userId = req.user.id;
     const { addressId } = req.params;
 
@@ -181,10 +176,8 @@ export const updateAddress = asyncHandler(
   }
 );
 
-
-
 export const deleteAddress = asyncHandler(
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     const userId = req.user.id;
     const { addressId } = req.params;
 
@@ -211,10 +204,8 @@ export const deleteAddress = asyncHandler(
   }
 );
 
-
-
 export const setDefaultAddress = asyncHandler(
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     const userId = req.user.id;
     const { addressId } = req.params;
 

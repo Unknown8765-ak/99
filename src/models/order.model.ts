@@ -63,6 +63,7 @@ export interface IOrder extends Document {
   deliveryCharge: number;
   discount: number;
   totalAmount: number;
+  estimatedDeliveryDate : Date;
 
   orderStatus: OrderStatus;
 
@@ -275,6 +276,10 @@ const orderSchema = new Schema<IOrder>(
       required: true,
       min: 0,
     },
+    estimatedDeliveryDate: {
+      type: Date,
+      required: true,
+    },
 
     orderStatus: {
       type: String,
@@ -292,9 +297,6 @@ const orderSchema = new Schema<IOrder>(
       index: true,
     },
 
-    /**
-     * Order tracking history
-     */
     statusHistory: {
       type: [orderStatusHistorySchema],
       default: [

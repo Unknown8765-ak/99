@@ -11,9 +11,6 @@ import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
 
-// ─────────────────────────────────────────────
-// Create Order (COD)
-// ─────────────────────────────────────────────
 
 export const createOrder = asyncHandler(
   async (req, res) => {
@@ -31,6 +28,7 @@ export const createOrder = asyncHandler(
         "Currently only COD payment is supported"
       );
     }
+    
 
     const session = await mongoose.startSession();
 
@@ -102,10 +100,19 @@ export const createOrder = asyncHandler(
         }
 
         // 4. Calculate charges on backend
-        const deliveryCharge = subtotal >= 499 ? 0 : 40;
+        const deliveryCharge = subtotal >= 199 ? 0 : 40;
         const discount = 0;
-        const totalAmount =
-          subtotal + deliveryCharge - discount;
+        const totalAmount = subtotal + deliveryCharge - discount;
+
+        //calc delivery date
+        const estimatedDeliveryDate = new Date();
+          estimatedDeliveryDate.setDate(
+            estimatedDeliveryDate.getDate() + 2
+          );
+
+    if(!estimatedDeliveryDate){
+      throw new ApiError(404, "delivery date is not found");
+    }
 
         // 5. Copy address as shipping snapshot
         const shippingAddress = {
@@ -128,6 +135,7 @@ export const createOrder = asyncHandler(
           deliveryCharge,
           discount,
           totalAmount,
+          estimatedDeliveryDate,
           orderStatus: "confirmed",
           paymentStatus: "pending",
           paymentMethod: "cod",
@@ -156,10 +164,6 @@ export const createOrder = asyncHandler(
 );
 
 
-// ─────────────────────────────────────────────
-// Get My Orders
-// ─────────────────────────────────────────────
-
 export const getMyOrders = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.user.id;
@@ -181,9 +185,6 @@ export const getMyOrders = asyncHandler(
 );
 
 
-// ─────────────────────────────────────────────
-// Get Order By ID
-// ─────────────────────────────────────────────
 
 export const getOrderById = asyncHandler(
   async (req: Request, res: Response) => {
@@ -217,9 +218,6 @@ export const getOrderById = asyncHandler(
 );
 
 
-// ─────────────────────────────────────────────
-// Cancel Order
-// ─────────────────────────────────────────────
 
 export const cancelOrder = asyncHandler(
   async (req: Request, res: Response) => {
@@ -290,10 +288,6 @@ export const cancelOrder = asyncHandler(
     }
   }
 );
-
-// ─────────────────────────────────────────────
-// Track Order
-// ─────────────────────────────────────────────
 
 export const trackOrder = asyncHandler(
   async (req: Request, res: Response) => {

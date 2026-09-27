@@ -11,7 +11,7 @@ import adminMiddleware from "../middlewares/admin.middleware.js";
 const router = Router();
 
 router.post(
-  "/product-images",
+  "/:productId/images",
   authMiddleware,
   adminMiddleware,
   upload.array("images", 5),

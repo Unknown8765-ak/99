@@ -45,7 +45,7 @@ router.get(
 router.get(
   "/:id",
   authMiddleware,
-  adminMiddleware,
+  // adminMiddleware,
   getProductById
 );
 

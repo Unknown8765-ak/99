@@ -38,7 +38,7 @@ router.post(
 router.get(
   "/",
   authMiddleware,
-  adminMiddleware,
+  // adminMiddleware,
   getAllProducts
 );
 

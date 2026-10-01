@@ -1,24 +1,131 @@
+// import cors from "cors";
+// import express from "express";
+// import cookieParser from "cookie-parser";
+// import helmet from "helmet";
+// import errorMiddleware from "./middlewares/error.middleware.js";
+// const app = express();
+
+// app.use(helmet());
+// console.log("cors",process.env.CORS_ORIGIN)
+// console.log("PORT APP",process.env.PORT)
+// app.use(
+//   cors({
+//     origin: "http://localhost:5173",
+//     credentials: true,
+//   })
+// );
+// app.use(express.json({limit: "16kb",}));
+// app.use(express.urlencoded({extended: true,limit: "16kb",}));
+// app.use(cookieParser());
+// app.use(express.static("public"));
+
+
+// app.get("/", (_req, res) => {
+//   res.status(200).json({
+//     success: true,
+//     message: "99 API is running",
+//   });
+// });
+
+// import authRoutes from "./routes/auth.routes.js";
+// import categoryRoutes from "./routes/category.route.js";
+// import uploadRoutes from "./routes/upload.routes.js";
+// import cartRoutes from "./routes/cart.routes.js";
+// import addressRoutes from "./routes/address.routes.js";
+// import orderRoutes from "./routes/order.routes.js";
+// import productRoutes from "./routes/product.routes.js";
+// import supportRoutes from "./routes/support.routes.js";
+// import wishlistRoutes from "./routes/wishlist.routes.js"
+// import adminOrderRoutes from "./routes/adminOrder.routes.js";
+// import customerRoutes from "./routes/customer.routes.js";
+// import adminProfileRoutes from "./routes/adminProfile.routes.js";
+
+
+
+
+
+// app.use("/api/v1/auth", authRoutes);
+// app.use("/api/v1/categories", categoryRoutes);
+// app.use("/api/v1/uploads", uploadRoutes);
+// app.use("/api/v1/cart", cartRoutes);
+// app.use("/api/v1/addresses", addressRoutes);
+// app.use("/api/v1/orders", orderRoutes);
+// app.use("/api/v1/products", productRoutes);
+// app.use("/api/v1/support", supportRoutes);
+// app.use("/api/v1/wishlist", wishlistRoutes);
+// app.use("/api/v1/admin/orders", adminOrderRoutes);
+// app.use("/api/v1/admin/customers", customerRoutes);
+// app.use("/api/v1/admin/profile",adminProfileRoutes);
+
+
+// app.use(errorMiddleware)
+
+// export { app };
+
 import cors from "cors";
 import express from "express";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
+
 import errorMiddleware from "./middlewares/error.middleware.js";
+
 const app = express();
 
 app.use(helmet());
-console.log("cors",process.env.CORS_ORIGIN)
-console.log("PORT APP",process.env.PORT)
+console.log("CORS_ORIGIN:", process.env.CORS_ORIGIN);
+console.log("PORT APP:", process.env.PORT);
+
+const allowedOrigins = [
+  "https://99-admin-panel.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: (origin, callback) => {
+      // Allow requests from mobile apps, Postman, etc.
+      // Native Expo/React Native requests normally don't
+      // behave like browser requests with an Origin header.
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      console.log("❌ CORS blocked:", origin);
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
+
     credentials: true,
+
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Cookie",
+    ],
   })
 );
-app.use(express.json({limit: "16kb",}));
-app.use(express.urlencoded({extended: true,limit: "16kb",}));
+
+app.use(
+  express.json({
+    limit: "16kb",
+  })
+);
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: "16kb",
+  })
+);
+
 app.use(cookieParser());
 app.use(express.static("public"));
-
 
 app.get("/", (_req, res) => {
   res.status(200).json({
@@ -26,6 +133,8 @@ app.get("/", (_req, res) => {
     message: "99 API is running",
   });
 });
+
+
 
 import authRoutes from "./routes/auth.routes.js";
 import categoryRoutes from "./routes/category.route.js";
@@ -35,14 +144,10 @@ import addressRoutes from "./routes/address.routes.js";
 import orderRoutes from "./routes/order.routes.js";
 import productRoutes from "./routes/product.routes.js";
 import supportRoutes from "./routes/support.routes.js";
-import wishlistRoutes from "./routes/wishlist.routes.js"
+import wishlistRoutes from "./routes/wishlist.routes.js";
 import adminOrderRoutes from "./routes/adminOrder.routes.js";
 import customerRoutes from "./routes/customer.routes.js";
 import adminProfileRoutes from "./routes/adminProfile.routes.js";
-
-
-
-
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/categories", categoryRoutes);
@@ -55,9 +160,10 @@ app.use("/api/v1/support", supportRoutes);
 app.use("/api/v1/wishlist", wishlistRoutes);
 app.use("/api/v1/admin/orders", adminOrderRoutes);
 app.use("/api/v1/admin/customers", customerRoutes);
-app.use("/api/v1/admin/profile",adminProfileRoutes);
+app.use("/api/v1/admin/profile", adminProfileRoutes);
 
 
-app.use(errorMiddleware)
+
+app.use(errorMiddleware);
 
 export { app };

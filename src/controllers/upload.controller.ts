@@ -11,19 +11,16 @@ export const uploadProductImages = asyncHandler(
   async (req: Request, res: Response) => {
     const { productId } = req.params;
 
-    // Check product ID
     if (!productId) {
       throw new ApiError(400, "Product ID is required");
     }
 
-    // Find product
     const product = await Product.findById(productId);
 
     if (!product) {
       throw new ApiError(404, "Product not found");
     }
 
-    // Get uploaded files
     const files = req.files as
       | Express.Multer.File[]
       | undefined;
@@ -35,7 +32,6 @@ export const uploadProductImages = asyncHandler(
       );
     }
 
-    // Upload images to Cloudinary
     const uploadedImages = await Promise.all(
       files.map((file) =>
         uploadImageToCloudinary(
@@ -45,15 +41,12 @@ export const uploadProductImages = asyncHandler(
       )
     );
 
-    // Get only Cloudinary URLs
     const imageUrls = uploadedImages.map(
       (image) => image.secure_url
     );
 
-    // Add new images to existing images
     product.images.push(...imageUrls);
 
-    // Save product
     await product.save();
 
     return res.status(200).json(

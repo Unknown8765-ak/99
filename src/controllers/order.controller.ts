@@ -36,7 +36,6 @@ export const createOrder = asyncHandler(
       let createdOrder;
 
       await session.withTransaction(async () => {
-        // 1. Verify address belongs to logged-in user
         const address = await Address.findOne({
           _id: addressId,
           user: userId,
@@ -46,7 +45,6 @@ export const createOrder = asyncHandler(
           throw new ApiError(404, "Address not found");
         }
 
-        // 2. Find user's cart
         const cart = await Cart.findOne({
           user: userId,
         }).session(session);
@@ -58,7 +56,6 @@ export const createOrder = asyncHandler(
         const orderItems = [];
         let subtotal = 0;
 
-        // 3. Validate products and reserve stock
         for (const cartItem of cart.items) {
           const product = await Product.findOneAndUpdate(
             {
@@ -82,7 +79,6 @@ export const createOrder = asyncHandler(
             );
           }
 
-          // Always use current database price
           const price = product.price;
           const itemSubtotal = price * cartItem.quantity;
 
@@ -99,12 +95,10 @@ export const createOrder = asyncHandler(
           });
         }
 
-        // 4. Calculate charges on backend
         const deliveryCharge = subtotal >= 199 ? 0 : 40;
         const discount = 0;
         const totalAmount = subtotal + deliveryCharge - discount;
 
-        //calc delivery date
         const estimatedDeliveryDate = new Date();
           estimatedDeliveryDate.setDate(
             estimatedDeliveryDate.getDate() + 2
@@ -114,7 +108,6 @@ export const createOrder = asyncHandler(
       throw new ApiError(404, "delivery date is not found");
     }
 
-        // 5. Copy address as shipping snapshot
         const shippingAddress = {
           fullName: address.fullName,
           phone: address.phone,
@@ -126,7 +119,6 @@ export const createOrder = asyncHandler(
           country: address.country,
         };
 
-        // 6. Create order
         const order = new Order({
           user: userId,
           items: orderItems,
@@ -143,7 +135,6 @@ export const createOrder = asyncHandler(
 
         await order.save({ session });
 
-        // 7. Clear cart
         cart.items = [];
         await cart.save({ session });
 
@@ -259,7 +250,6 @@ export const cancelOrder = asyncHandler(
           );
         }
 
-        // Restore stock
         for (const item of order.items) {
           await Product.updateOne(
             { _id: item.product },

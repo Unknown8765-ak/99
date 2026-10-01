@@ -24,7 +24,6 @@ export const createAddress = asyncHandler(
       isDefault,
     } = req.body;
 
-    // If new address is default, remove previous default
     if (isDefault === true) {
       await Address.updateMany(
         { user: userId, isDefault: true },
@@ -138,7 +137,6 @@ export const updateAddress = asyncHandler(
       isDefault,
     } = req.body;
 
-    // If updated address becomes default
     if (isDefault === true) {
       await Address.updateMany(
         {
@@ -222,7 +220,6 @@ export const setDefaultAddress = asyncHandler(
       throw new ApiError(404, "Address not found");
     }
 
-    // Remove default from all user's addresses
     await Address.updateMany(
       {
         user: userId,

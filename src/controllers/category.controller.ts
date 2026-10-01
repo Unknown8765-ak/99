@@ -7,7 +7,6 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
-// 1. CREATE CATEGORY
 export const createCategory = asyncHandler(
   async (req: Request, res: Response) => {
     const { name, slug, description, image } = req.body;
@@ -40,7 +39,6 @@ export const createCategory = asyncHandler(
   }
 );
 
-// 2. GET ALL CATEGORIES (ADMIN)
 export const getAllCategories = asyncHandler(
   async (_req: Request, res: Response) => {
     const categories = await Category.find()
@@ -57,7 +55,6 @@ export const getAllCategories = asyncHandler(
   }
 );
 
-// 3. GET CATEGORY BY ID
 export const getCategoryById = asyncHandler(
   async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -78,7 +75,6 @@ export const getCategoryById = asyncHandler(
   }
 );
 
-// 4. UPDATE CATEGORY
 export const updateCategory = asyncHandler(
   async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -134,7 +130,6 @@ export const updateCategory = asyncHandler(
   }
 );
 
-// 5. DELETE CATEGORY (SOFT DELETE)
 export const deleteCategory = asyncHandler(
   async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -174,7 +169,6 @@ export const deleteCategory = asyncHandler(
   }
 );
 
-// 6. GET ACTIVE CATEGORIES (PUBLIC)
 export const getActiveCategories = asyncHandler(
   async (_req: Request, res: Response) => {
     const categories = await Category.find({

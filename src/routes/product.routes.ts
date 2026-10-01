@@ -22,47 +22,25 @@ import {
 
 const router = Router();
 
-// Public routes
 router.get("/active", getActiveProducts);
 router.get("/slug/:slug", getProductBySlug);
 
-// Admin routes
-router.post(
-  "/",
-  authMiddleware,
-  adminMiddleware,
-  validate(createProductSchema),
-  createProduct
-);
 
-router.get(
-  "/",
-  authMiddleware,
+router.post("/",authMiddleware,adminMiddleware,validate(createProductSchema),createProduct);
+
+router.get("/",authMiddleware,
   // adminMiddleware,
   getAllProducts
 );
 
 router.get(
-  "/:id",
-  authMiddleware,
-  // adminMiddleware,
+  "/:id",authMiddleware,// adminMiddleware,
   getProductById
-);
+  );
 
-router.patch(
-  "/:id",
-  authMiddleware,
-  adminMiddleware,
-  validate(updateProductSchema),
-  updateProduct
-);
+router.patch("/:id",authMiddleware,adminMiddleware,validate(updateProductSchema),updateProduct);
 
-router.delete(
-  "/:id",
-  authMiddleware,
-  adminMiddleware,
-  deleteProduct
-);
+router.delete("/:id",authMiddleware,adminMiddleware,deleteProduct);
 router.get("/:id/similar",authMiddleware, getSimilarProducts);
 
 export default router;

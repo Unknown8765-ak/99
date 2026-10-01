@@ -70,7 +70,6 @@ export const addToWishlist = asyncHandler(
       throw new ApiError(400, "Invalid product ID.");
     }
 
-    // Check product exists and is active
     const product = await Product.findOne({
       _id: productId,
       isActive: true,
@@ -83,8 +82,6 @@ export const addToWishlist = asyncHandler(
       );
     }
 
-    // Create wishlist if it doesn't exist.
-    // $addToSet prevents duplicate products.
     const wishlist = await Wishlist.findOneAndUpdate(
       {
         user: userId,

@@ -16,10 +16,10 @@ import adminMiddleware from "../middlewares/admin.middleware.js";
 
 const router = Router();
 
-// Public route
+
 router.get("/active", getActiveCategories);
 
-// Admin routes
+
 router.post(
   "/",
   authMiddleware,

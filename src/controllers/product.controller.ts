@@ -7,7 +7,7 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
-// 1. CREATE PRODUCT
+
 export const createProduct = asyncHandler(
   async (req: Request, res: Response) => {
     const {
@@ -61,7 +61,7 @@ export const createProduct = asyncHandler(
 );
 
 
-// 2. GET ALL PRODUCTS
+
 export const getAllProducts = asyncHandler(
   async (req: Request, res: Response) => {
     const {
@@ -125,7 +125,6 @@ export const getAllProducts = asyncHandler(
 );
 
 
-// 3. GET PRODUCT BY ID
 export const getProductById = asyncHandler(
   async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -147,7 +146,6 @@ export const getProductById = asyncHandler(
 );
 
 
-// 4. UPDATE PRODUCT
 export const updateProduct = asyncHandler(
   async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -231,7 +229,6 @@ export const updateProduct = asyncHandler(
 );
 
 
-// 5. DELETE PRODUCT (SOFT DELETE)
 export const deleteProduct = asyncHandler(
   async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -257,7 +254,6 @@ export const deleteProduct = asyncHandler(
   }
 );
 
-// 6. GET ACTIVE PRODUCTS
 export const getActiveProducts = asyncHandler(
   async (req: Request, res: Response) => {
     const {
@@ -330,7 +326,6 @@ export const getActiveProducts = asyncHandler(
 );
 
 
-// 7. GET PRODUCT BY SLUG
 export const getProductBySlug = asyncHandler(
   async (req: Request, res: Response) => {
     const { slug } = req.params;

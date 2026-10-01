@@ -16,6 +16,11 @@ const cookieOptions = {
   secure: env.NODE_ENV === "production",
   sameSite: "strict" as const,
 };
+// const cookieOptions = {
+//   httpOnly: true,
+//   secure: false,
+//   sameSite: "lax" as const,
+// };
 
 
 

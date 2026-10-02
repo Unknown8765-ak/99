@@ -13,8 +13,8 @@ import generateToken from "../utils/generateToken.js";
 
 const cookieOptions = {
   httpOnly: true,
-  secure: env.NODE_ENV === "production",
-  sameSite: "strict" as const,
+  secure: true,
+  sameSite: "none" as const,
 };
 // const cookieOptions = {
 //   httpOnly: true,

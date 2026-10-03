@@ -354,7 +354,7 @@ export const createExchangeRequest = asyncHandler(async (req, res) => {
   const userId = req.user.id;
  const rawOrderId = req.params.orderId;
 
-const orderId = Array.isArray(rawOrderId)
+  const orderId = Array.isArray(rawOrderId)
   ? rawOrderId[0]
   : rawOrderId;
   const { productId, quantity, reason } = req.body;
@@ -459,3 +459,43 @@ const orderId = Array.isArray(rawOrderId)
     )
   );
 });
+
+export const getExchangeRequestStatus = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { orderId } = req.params;
+    const userId = req.user.id;
+
+    const normalizedOrderId = Array.isArray(orderId)
+      ? orderId[0]
+      : orderId;
+
+    if (
+      !normalizedOrderId ||
+      !mongoose.isValidObjectId(normalizedOrderId)
+    ) {
+      throw new ApiError(400, "Invalid order ID");
+    }
+
+    const exchangeRequest = await Exchange.findOne({
+      order: normalizedOrderId,
+      user: userId,
+    })
+      .populate("product", "name images price sku")
+      .populate("replacementOrderId");
+
+    if (!exchangeRequest) {
+      throw new ApiError(
+        404,
+        "No exchange request found for this order"
+      );
+    }
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        exchangeRequest,
+        "Exchange request fetched successfully"
+      )
+    );
+  }
+);

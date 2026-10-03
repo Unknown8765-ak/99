@@ -352,8 +352,12 @@ export const trackOrder = asyncHandler(
 
 export const createExchangeRequest = asyncHandler(async (req, res) => {
   const userId = req.user.id;
+ const rawOrderId = req.params.orderId;
 
-  const { orderId, productId, quantity, reason } = req.body;
+const orderId = Array.isArray(rawOrderId)
+  ? rawOrderId[0]
+  : rawOrderId;
+  const { productId, quantity, reason } = req.body;
 
   if (!mongoose.isValidObjectId(orderId)) {
     throw new ApiError(400, "Invalid order ID");

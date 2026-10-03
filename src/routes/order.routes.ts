@@ -5,7 +5,8 @@ import {
   getMyOrders,
   getOrderById,
   cancelOrder,
-  trackOrder
+  trackOrder,
+  createExchangeRequest
 } from "../controllers/order.controller.js";
 
 import authMiddleware from "../middlewares/auth.middleware.js";
@@ -17,5 +18,6 @@ router.get("/",authMiddleware, getMyOrders);
 router.get("/:orderId/track", authMiddleware, trackOrder);
 router.get("/:orderId",authMiddleware, getOrderById);
 router.patch("/:orderId/cancel",authMiddleware, cancelOrder);
+router.post("/:orderId/exchange",authMiddleware,createExchangeRequest);
 
 export default router;

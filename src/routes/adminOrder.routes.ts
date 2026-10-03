@@ -4,6 +4,8 @@ import {
   getAllOrders,
   getAdminOrderById,
   updateOrderStatus,
+  getAllExchangeRequests,
+  updateExchangeStatus
 } from "../controllers/adminOrder.controller.js";
 
 import authMiddleware from "../middlewares/auth.middleware.js";
@@ -32,6 +34,20 @@ router.patch(
   authMiddleware,
   adminMiddleware,
   updateOrderStatus
+);
+
+router.get(
+  "/exchanges",
+  authMiddleware,
+  adminMiddleware,
+  getAllExchangeRequests
+);
+
+router.patch(
+  "/exchanges/:exchangeId/status",
+  authMiddleware,
+  adminMiddleware,
+  updateExchangeStatus
 );
 
 export default router;

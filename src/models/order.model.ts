@@ -204,7 +204,6 @@ const orderStatusHistorySchema =
           "out_for_delivery",
           "delivered",
           "cancelled",
-          "returned",
         ],
         required: true,
       },

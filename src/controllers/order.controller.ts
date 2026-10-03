@@ -9,6 +9,7 @@ import { Address } from "../models/address.model.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import Exchange, {ExchangeReason,} from "../models/exchange.model.js";
 
 
 
@@ -348,3 +349,109 @@ export const trackOrder = asyncHandler(
     );
   }
 );
+
+export const createExchangeRequest = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+
+  const { orderId, productId, quantity, reason } = req.body;
+
+  if (!mongoose.isValidObjectId(orderId)) {
+    throw new ApiError(400, "Invalid order ID");
+  }
+
+  if (!mongoose.isValidObjectId(productId)) {
+    throw new ApiError(400, "Invalid product ID");
+  }
+
+  if (!quantity || !Number.isInteger(quantity) || quantity < 1) {
+    throw new ApiError(
+      400,
+      "Exchange quantity must be at least 1" 
+    );
+  }
+
+ if (!reason || typeof reason !== "string" || !reason.trim()) {
+  throw new ApiError(400, "Exchange reason is required");
+}
+    const exchangeReason = reason.trim() as ExchangeReason;
+
+  const order = await Order.findOne({
+    _id: orderId,
+    user: userId,
+  });
+
+  if (!order) {
+    throw new ApiError(
+      404,
+      "Order not found or you are not authorized to access this order"
+    );
+  }
+
+
+  if (order.orderStatus !== "delivered") {
+    throw new ApiError(
+      400,
+      "Exchange can only be requested after the order is delivered"
+    );
+  }
+
+
+  const orderItem = order.items.find(
+    (item) => item.product.toString() === productId
+  );
+
+  if (!orderItem) {
+    throw new ApiError(
+      400,
+      "This product does not belong to the selected order"
+    );
+  }
+
+  if (quantity > orderItem.quantity) {
+    throw new ApiError(
+      400,
+      `You can only exchange up to ${orderItem.quantity} item(s)`
+    );
+  }
+
+
+ const existingExchange = await Exchange.findOne({
+    order: orderId,
+    product: productId,
+    user: userId,
+    status: {
+      $in: [
+        "requested",
+        "approved",
+        "pickup_pending",
+        "picked_up",
+        "replacement_shipped",
+      ],
+    },
+  });
+
+  if (existingExchange) {
+    throw new ApiError(
+      400,
+      "Exchange request already exists for this product"
+    );
+  }
+
+  const exchangeRequest = await Exchange.create({
+    order: orderId,
+    user: userId,
+    product: productId,
+    quantity,
+    reason:exchangeReason,
+    status: "requested",
+  });
+
+
+  return res.status(201).json(
+    new ApiResponse(
+      201,
+      exchangeRequest,
+      "Exchange request submitted successfully"
+    )
+  );
+});

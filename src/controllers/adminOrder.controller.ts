@@ -5,6 +5,7 @@ import { Order } from "../models/order.model.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import Exchange,{ExchangeStatus} from "../models/exchange.model.js";
 
 /**
  * GET ALL ORDERS - ADMIN
@@ -289,3 +290,186 @@ export const updateOrderStatus = asyncHandler(
     );
   }
 );
+
+
+export const getAllExchangeRequests = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { status } = req.query;
+
+    const filter: Record<string, unknown> = {};
+
+    if (status) {
+      const allowedStatuses: ExchangeStatus[] = [
+        "requested",
+        "approved",
+        "rejected",
+        "pickup_pending",
+        "picked_up",
+        "replacement_shipped",
+        "completed",
+      ];
+
+      if (
+        typeof status !== "string" ||
+        !allowedStatuses.includes(status as ExchangeStatus)
+      ) {
+        throw new ApiError(400, "Invalid exchange status");
+      }
+
+      filter.status = status;
+    }
+
+    const exchanges = await Exchange.find(filter)
+      .populate("user", "name email phone")
+      .populate(
+        "product",
+        "name slug images price sku"
+      )
+      .populate(
+        "order",
+        "items orderStatus totalAmount shippingAddress"
+      )
+      .populate(
+        "replacementOrderId",
+        "items orderStatus totalAmount shippingAddress"
+      )
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        exchanges,
+        "Exchange requests fetched successfully"
+      )
+    );
+  }
+);
+
+
+export const updateExchangeStatus = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { exchangeId } = req.params;
+
+    const {
+      status,
+      adminNote,
+      rejectedReason,
+    } = req.body;
+
+    const normalizedExchangeId = Array.isArray(exchangeId)
+      ? exchangeId[0]
+      : exchangeId;
+
+    if (
+      !normalizedExchangeId ||
+      !mongoose.isValidObjectId(normalizedExchangeId)
+    ) {
+      throw new ApiError(
+        400,
+        "Invalid exchange ID"
+      );
+    }
+
+    const allowedStatuses = [
+      "requested",
+      "approved",
+      "rejected",
+      "pickup_pending",
+      "picked_up",
+      "replacement_shipped",
+      "completed",
+    ] as const;
+
+    if (
+      typeof status !== "string" ||
+      !allowedStatuses.includes(
+        status as ExchangeStatus
+      )
+    ) {
+      throw new ApiError(
+        400,
+        "Invalid exchange status"
+      );
+    }
+
+    const newStatus = status as ExchangeStatus;
+
+    const exchange = await Exchange.findById(
+      normalizedExchangeId
+    );
+
+    if (!exchange) {
+      throw new ApiError(
+        404,
+        "Exchange request not found"
+      );
+    }
+
+
+    if (exchange.status === newStatus) {
+      throw new ApiError(
+        400,
+        `Exchange is already ${newStatus}`
+      );
+    }
+
+
+    if (newStatus === "rejected") {
+      if (
+        !rejectedReason ||
+        typeof rejectedReason !== "string" ||
+        !rejectedReason.trim()
+      ) {
+        throw new ApiError(
+          400,
+          "Rejected reason is required"
+        );
+      }
+
+      exchange.rejectedReason =
+        rejectedReason.trim();
+    }
+
+    if (
+      adminNote !== undefined &&
+      typeof adminNote === "string"
+    ) {
+      exchange.adminNote =
+        adminNote.trim();
+    }
+
+
+    exchange.status = newStatus;
+
+    const updatedExchange =
+      await Exchange.findById(
+        normalizedExchangeId
+      )
+        .populate(
+          "user",
+          "name email phone"
+        )
+        .populate(
+          "product",
+          "name slug images price sku"
+        )
+        .populate(
+          "order",
+          "items orderStatus totalAmount shippingAddress"
+        )
+        .populate(
+          "replacementOrderId",
+          "items orderStatus totalAmount shippingAddress"
+        );
+
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        updatedExchange,
+        "Exchange status updated successfully"
+      )
+    );
+  }
+);
+
